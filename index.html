@@ -24,6 +24,7 @@ body{
     display:flex;
     align-items:center;
     justify-content:center;
+    position:relative;
 }
 
 .tv video{
@@ -33,16 +34,24 @@ body{
     object-fit:cover;
 }
 
+.tv img{
+    width:380px;
+    height:240px;
+    object-fit:cover;
+}
+
 /* Preview */
 .preview-box{
     margin-top:20px;
 }
 
-.preview-box video{
+.preview-box video,
+.preview-box img{
     width:260px;
     height:160px;
     background:black;
     border:3px solid #444;
+    object-fit:cover;
 }
 
 /* Botões */
@@ -90,14 +99,16 @@ button:hover{
 NO AR <div id="onair"></div>
 
 <!-- PROGRAM -->
-<div class="tv">
+<div class="tv" id="programContainer">
     <video id="program"></video>
 </div>
 
 <!-- PREVIEW -->
 <div class="preview-box">
     <h4>PREVIEW</h4>
-    <video id="preview" muted></video>
+    <div id="previewContainer">
+        <video id="preview" muted></video>
+    </div>
 </div>
 
 <br>
@@ -112,19 +123,38 @@ NO AR <div id="onair"></div>
 <br><br>
 
 <button onclick="cut()">CUT</button>
-png
+
 <script>
+let previewContainer = document.getElementById("previewContainer");
+let programContainer = document.getElementById("programContainer");
+
 let preview = document.getElementById("preview");
 let program = document.getElementById("program");
 let onair = document.getElementById("onair");
 
 let currentPreviewBtn = null;
 let currentProgramBtn = null;
+let previewFile = null;
 
 function setPreview(button,file){
-    preview.src = file;
-    preview.load();
-    preview.play();
+
+    previewFile = file;
+
+    previewContainer.innerHTML = "";
+
+    if(file.endsWith(".png") || file.endsWith(".jpg")){
+        let img = document.createElement("img");
+        img.src = file;
+        previewContainer.appendChild(img);
+    } else {
+        let video = document.createElement("video");
+        video.src = file;
+        video.muted = true;
+        video.autoplay = true;
+        video.width = 260;
+        video.height = 160;
+        previewContainer.appendChild(video);
+    }
 
     if(currentPreviewBtn){
         currentPreviewBtn.classList.remove("previewActive");
@@ -135,12 +165,23 @@ function setPreview(button,file){
 }
 
 function cut(){
-    if(!preview.src) return;
 
-    program.src = preview.src;
-    program.currentTime = preview.currentTime;
-    program.load();
-    program.play();
+    if(!previewFile) return;
+
+    programContainer.innerHTML = "";
+
+    if(previewFile.endsWith(".png") || previewFile.endsWith(".jpg")){
+        let img = document.createElement("img");
+        img.src = previewFile;
+        programContainer.appendChild(img);
+    } else {
+        let video = document.createElement("video");
+        video.src = previewFile;
+        video.autoplay = true;
+        video.width = 380;
+        video.height = 240;
+        programContainer.appendChild(video);
+    }
 
     onair.classList.add("on");
 
@@ -159,5 +200,3 @@ function cut(){
 
 </body>
 </html>
-
-
