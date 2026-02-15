@@ -27,14 +27,7 @@ body{
     position:relative;
 }
 
-.tv video{
-    width:380px;
-    height:240px;
-    background:black;
-    object-fit:cover;
-}
-
-.tv img{
+.tv video, .tv img{
     width:380px;
     height:240px;
     object-fit:cover;
@@ -95,20 +88,18 @@ button:hover{
 
 <body>
 
+<h1 style="color:red;font-size:40px;">TESTE SLIDE 1</h1>
+
 <h3>Central de Controle</h3>
 NO AR <div id="onair"></div>
 
 <!-- PROGRAM -->
-<div class="tv" id="programContainer">
-    <video id="program"></video>
-</div>
+<div class="tv" id="programContainer"></div>
 
 <!-- PREVIEW -->
 <div class="preview-box">
     <h4>PREVIEW</h4>
-    <div id="previewContainer">
-        <video id="preview" muted></video>
-    </div>
+    <div id="previewContainer"></div>
 </div>
 
 <br>
@@ -127,9 +118,6 @@ NO AR <div id="onair"></div>
 <script>
 let previewContainer = document.getElementById("previewContainer");
 let programContainer = document.getElementById("programContainer");
-
-let preview = document.getElementById("preview");
-let program = document.getElementById("program");
 let onair = document.getElementById("onair");
 
 let currentPreviewBtn = null;
@@ -139,7 +127,6 @@ let previewFile = null;
 function setPreview(button,file){
 
     previewFile = file;
-
     previewContainer.innerHTML = "";
 
     if(file.endsWith(".png") || file.endsWith(".jpg")){
@@ -149,10 +136,8 @@ function setPreview(button,file){
     } else {
         let video = document.createElement("video");
         video.src = file;
-        video.muted = true;
         video.autoplay = true;
-        video.width = 260;
-        video.height = 160;
+        video.muted = true;
         previewContainer.appendChild(video);
     }
 
@@ -178,8 +163,6 @@ function cut(){
         let video = document.createElement("video");
         video.src = previewFile;
         video.autoplay = true;
-        video.width = 380;
-        video.height = 240;
         programContainer.appendChild(video);
     }
 
