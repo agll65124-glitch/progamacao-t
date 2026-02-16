@@ -88,7 +88,7 @@ button:hover{
 
 <body>
 
-<h1 style="color:red;font-size:40px;">­</h1>
+<h1 style="color:red;font-size:40px;"> </h1>
 
 <h3>Central de Controle</h3>
 NO AR <div id="onair"></div>
@@ -124,6 +124,10 @@ let currentPreviewBtn = null;
 let currentProgramBtn = null;
 let previewFile = null;
 
+/* =========================
+   FUNÇÃO PREVIEW
+========================= */
+
 function setPreview(button,file){
 
     previewFile = file;
@@ -148,6 +152,10 @@ function setPreview(button,file){
     button.classList.add("previewActive");
     currentPreviewBtn = button;
 }
+
+/* =========================
+   FUNÇÃO CUT
+========================= */
 
 function cut(){
 
@@ -179,8 +187,46 @@ function cut(){
         currentPreviewBtn = null;
     }
 }
+
+/* =========================
+   ATALHOS DE TECLADO
+========================= */
+
+const buttons = document.querySelectorAll("button");
+
+const commands = {
+    "cam1": () => buttons[0].click(),
+    "cam2": () => buttons[1].click(),
+    "vtr1": () => buttons[2].click(),
+    "vtr2": () => buttons[3].click(),
+    "vtr3": () => buttons[4].click(),
+    "slide1": () => buttons[5].click(),
+    "cut": () => cut()
+};
+
+let keyBuffer = "";
+let bufferTimeout;
+
+document.addEventListener("keydown", function(e){
+
+    if(e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+
+    keyBuffer += e.key.toLowerCase();
+
+    clearTimeout(bufferTimeout);
+
+    bufferTimeout = setTimeout(() => {
+        keyBuffer = "";
+    }, 2000);
+
+    for(let cmd in commands){
+        if(keyBuffer.endsWith(cmd)){
+            commands[cmd]();
+            keyBuffer = "";
+        }
+    }
+});
 </script>
 
 </body>
 </html>
-
