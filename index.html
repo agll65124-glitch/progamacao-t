@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Central Operador - Multiview</title>
+<title>Switcher com GC</title>
 
 <style>
 body{
@@ -12,53 +12,18 @@ body{
     text-align:center;
 }
 
-/* MULTIVIEW */
-.multiview{
-    display:grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap:10px;
-    width:900px;
-    margin:20px auto;
-}
-
-.source{
-    background:#111;
-    border:4px solid #333;
-    padding:5px;
-    cursor:pointer;
-}
-
-.source video,
-.source img{
-    width:100%;
-    height:140px;
-    object-fit:cover;
-}
-
-.source span{
-    display:block;
-    margin-top:4px;
-    font-size:14px;
-}
-
-.preview{
-    border-color:yellow !important;
-}
-
-.program{
-    border-color:red !important;
-}
-
-/* PROGRAM GRANDE */
+/* PROGRAM */
 .program-monitor{
-    width:600px;
-    height:340px;
+    width:700px;
+    height:400px;
     margin:20px auto;
     background:#222;
     border:12px solid #555;
+    position:relative;
     display:flex;
     align-items:center;
     justify-content:center;
+    overflow:hidden;
 }
 
 .program-monitor video,
@@ -68,10 +33,48 @@ body{
     object-fit:cover;
 }
 
-/* BOTÕES */
+/* LOWER THIRD */
+.lower-third{
+    position:absolute;
+    bottom:-120px;
+    left:0;
+    width:100%;
+    height:100px;
+    background:linear-gradient(to right,#c40000,#ff0000);
+    color:white;
+    padding:15px 25px;
+    box-sizing:border-box;
+    transition:bottom 0.5s ease;
+}
+
+.lower-third.show{
+    bottom:0;
+}
+
+.lower-third h2{
+    margin:0;
+    font-size:24px;
+}
+
+.lower-third p{
+    margin:5px 0 0 0;
+    font-size:16px;
+}
+
+/* CONTROLES */
+.gc-panel{
+    margin-top:20px;
+}
+
+input{
+    padding:6px;
+    margin:5px;
+    width:200px;
+}
+
 button{
     padding:6px 14px;
-    margin:6px;
+    margin:5px;
     background:#222;
     color:#ccc;
     border:1px solid #555;
@@ -81,149 +84,62 @@ button{
 button:hover{
     background:#333;
 }
-
-/* LUZ NO AR */
-#onair{
-    width:18px;
-    height:18px;
-    border-radius:50%;
-    background:#400;
-    display:inline-block;
-    margin-left:8px;
-}
-.on{
-    background:red !important;
-}
 </style>
 </head>
 
 <body>
 
-<h2>Central de Controle - Multiview</h2>
-NO AR <div id="onair"></div>
+<h2>Switcher com Gerador de Caracteres</h2>
 
-<!-- MULTIVIEW -->
-<div class="multiview" id="multiview"></div>
+<div class="program-monitor" id="programContainer">
 
-<!-- PROGRAM -->
-<div class="program-monitor" id="programContainer"></div>
+    <!-- LOWER THIRD -->
+    <div class="lower-third" id="lowerThird">
+        <h2 id="gcName">Nome Aqui</h2>
+        <p id="gcTitle">Cargo Aqui</p>
+    </div>
 
-<button onclick="cut()">CUT</button>
+</div>
+
+<!-- CONTROLE GC -->
+<div class="gc-panel">
+    <input type="text" id="nameInput" placeholder="Nome">
+    <input type="text" id="titleInput" placeholder="Cargo">
+
+    <br>
+
+    <button onclick="showGC()">MOSTRAR GC</button>
+    <button onclick="hideGC()">OCULTAR GC</button>
+</div>
 
 <script>
-const sources = [
-    {name:"CAM 1", file:"abertura.mp4"},
-    {name:"CAM 2", file:"infantil_abertura.mp4"},
-    {name:"VTR 1", file:"infantil_programa.mp4"},
-    {name:"VTR 2", file:"desenho_abertura.mp4"},
-    {name:"VTR 3", file:"desenho.mp4"},
-    {name:"SLIDE 1", file:"color_bars.png"}
-];
 
-let multiview = document.getElementById("multiview");
+/* SIMULAÇÃO DE VÍDEO BASE */
 let programContainer = document.getElementById("programContainer");
-let onair = document.getElementById("onair");
 
-let previewIndex = null;
-let programIndex = null;
+let video = document.createElement("video");
+video.src = "abertura.mp4";  // coloque seu vídeo aqui
+video.autoplay = true;
+video.loop = true;
+programContainer.insertBefore(video, programContainer.firstChild);
 
-/* CRIAR MULTIVIEW */
-sources.forEach((src,index)=>{
+/* GERADOR DE CARACTERES */
 
-    let box = document.createElement("div");
-    box.classList.add("source");
-    box.dataset.index = index;
+function showGC(){
 
-    if(src.file.endsWith(".png") || src.file.endsWith(".jpg")){
-        let img = document.createElement("img");
-        img.src = src.file;
-        box.appendChild(img);
-    }else{
-        let video = document.createElement("video");
-        video.src = src.file;
-        video.autoplay = true;
-        video.muted = true;
-        video.loop = true;
-        box.appendChild(video);
-    }
+    let name = document.getElementById("nameInput").value;
+    let title = document.getElementById("titleInput").value;
 
-    let label = document.createElement("span");
-    label.innerText = src.name;
-    box.appendChild(label);
+    document.getElementById("gcName").innerText = name;
+    document.getElementById("gcTitle").innerText = title;
 
-    box.onclick = () => setPreview(index);
-
-    multiview.appendChild(box);
-});
-
-/* SET PREVIEW */
-function setPreview(index){
-
-    document.querySelectorAll(".source").forEach(s=>s.classList.remove("preview"));
-
-    previewIndex = index;
-    document.querySelectorAll(".source")[index].classList.add("preview");
+    document.getElementById("lowerThird").classList.add("show");
 }
 
-/* CUT */
-function cut(){
-
-    if(previewIndex === null) return;
-
-    programContainer.innerHTML = "";
-    let src = sources[previewIndex];
-
-    if(src.file.endsWith(".png") || src.file.endsWith(".jpg")){
-        let img = document.createElement("img");
-        img.src = src.file;
-        programContainer.appendChild(img);
-    }else{
-        let video = document.createElement("video");
-        video.src = src.file;
-        video.autoplay = true;
-        video.controls = false;
-        programContainer.appendChild(video);
-    }
-
-    document.querySelectorAll(".source").forEach(s=>s.classList.remove("program"));
-    document.querySelectorAll(".source")[previewIndex].classList.add("program");
-
-    programIndex = previewIndex;
-    previewIndex = null;
-
-    document.querySelectorAll(".source").forEach(s=>s.classList.remove("preview"));
-
-    onair.classList.add("on");
+function hideGC(){
+    document.getElementById("lowerThird").classList.remove("show");
 }
 
-/* ATALHOS TECLADO */
-let keyBuffer = "";
-let bufferTimeout;
-
-const commands = {
-    "cam1": () => setPreview(0),
-    "cam2": () => setPreview(1),
-    "vtr1": () => setPreview(2),
-    "vtr2": () => setPreview(3),
-    "vtr3": () => setPreview(4),
-    "slide1": () => setPreview(5),
-    "cut": () => cut()
-};
-
-document.addEventListener("keydown", function(e){
-
-    keyBuffer += e.key.toLowerCase();
-
-    clearTimeout(bufferTimeout);
-    bufferTimeout = setTimeout(()=> keyBuffer="",2000);
-
-    for(let cmd in commands){
-        if(keyBuffer.endsWith(cmd)){
-            commands[cmd]();
-            keyBuffer="";
-        }
-    }
-});
 </script>
 
 </body>
