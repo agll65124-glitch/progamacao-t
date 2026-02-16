@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Central Operador</title>
+<title>Central Operador - Multiview</title>
 
 <style>
 body{
@@ -12,45 +12,66 @@ body{
     text-align:center;
 }
 
-/* TV Program */
-.tv{
-    width:460px;
-    height:300px;
+/* MULTIVIEW */
+.multiview{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:10px;
+    width:900px;
+    margin:20px auto;
+}
+
+.source{
+    background:#111;
+    border:4px solid #333;
+    padding:5px;
+    cursor:pointer;
+}
+
+.source video,
+.source img{
+    width:100%;
+    height:140px;
+    object-fit:cover;
+}
+
+.source span{
+    display:block;
+    margin-top:4px;
+    font-size:14px;
+}
+
+.preview{
+    border-color:yellow !important;
+}
+
+.program{
+    border-color:red !important;
+}
+
+/* PROGRAM GRANDE */
+.program-monitor{
+    width:600px;
+    height:340px;
     margin:20px auto;
     background:#222;
-    border:14px solid #555;
-    border-radius:25px;
-    box-shadow:0 0 50px black inset;
+    border:12px solid #555;
     display:flex;
     align-items:center;
     justify-content:center;
-    position:relative;
 }
 
-.tv video, .tv img{
-    width:380px;
-    height:240px;
+.program-monitor video,
+.program-monitor img{
+    width:100%;
+    height:100%;
     object-fit:cover;
 }
 
-/* Preview */
-.preview-box{
-    margin-top:20px;
-}
-
-.preview-box video,
-.preview-box img{
-    width:260px;
-    height:160px;
-    background:black;
-    border:3px solid #444;
-    object-fit:cover;
-}
-
-/* Botões */
+/* BOTÕES */
 button{
     padding:6px 14px;
-    margin:4px;
+    margin:6px;
     background:#222;
     color:#ccc;
     border:1px solid #555;
@@ -61,17 +82,7 @@ button:hover{
     background:#333;
 }
 
-.previewActive{
-    background:yellow;
-    color:black;
-}
-
-.programActive{
-    background:red;
-    color:white;
-}
-
-/* Luz NO AR */
+/* LUZ NO AR */
 #onair{
     width:18px;
     height:18px;
@@ -88,141 +99,128 @@ button:hover{
 
 <body>
 
-<h1 style="color:red;font-size:40px;"> </h1>
-
-<h3>Central de Controle</h3>
+<h2>Central de Controle - Multiview</h2>
 NO AR <div id="onair"></div>
 
+<!-- MULTIVIEW -->
+<div class="multiview" id="multiview"></div>
+
 <!-- PROGRAM -->
-<div class="tv" id="programContainer"></div>
-
-<!-- PREVIEW -->
-<div class="preview-box">
-    <h4>PREVIEW</h4>
-    <div id="previewContainer"></div>
-</div>
-
-<br>
-
-<button onclick="setPreview(this,'abertura.mp4')">CAM 1</button>
-<button onclick="setPreview(this,'infantil_abertura.mp4')">CAM 2</button>
-<button onclick="setPreview(this,'infantil_programa.mp4')">VTR 1</button>
-<button onclick="setPreview(this,'desenho_abertura.mp4')">VTR 2</button>
-<button onclick="setPreview(this,'desenho.mp4')">VTR 3</button>
-<button onclick="setPreview(this,'color_bars.png')">SLIDE 1</button>
-
-<br><br>
+<div class="program-monitor" id="programContainer"></div>
 
 <button onclick="cut()">CUT</button>
 
 <script>
-let previewContainer = document.getElementById("previewContainer");
+const sources = [
+    {name:"CAM 1", file:"abertura.mp4"},
+    {name:"CAM 2", file:"infantil_abertura.mp4"},
+    {name:"VTR 1", file:"infantil_programa.mp4"},
+    {name:"VTR 2", file:"desenho_abertura.mp4"},
+    {name:"VTR 3", file:"desenho.mp4"},
+    {name:"SLIDE 1", file:"color_bars.png"}
+];
+
+let multiview = document.getElementById("multiview");
 let programContainer = document.getElementById("programContainer");
 let onair = document.getElementById("onair");
 
-let currentPreviewBtn = null;
-let currentProgramBtn = null;
-let previewFile = null;
+let previewIndex = null;
+let programIndex = null;
 
-/* =========================
-   FUNÇÃO PREVIEW
-========================= */
+/* CRIAR MULTIVIEW */
+sources.forEach((src,index)=>{
 
-function setPreview(button,file){
+    let box = document.createElement("div");
+    box.classList.add("source");
+    box.dataset.index = index;
 
-    previewFile = file;
-    previewContainer.innerHTML = "";
-
-    if(file.endsWith(".png") || file.endsWith(".jpg")){
+    if(src.file.endsWith(".png") || src.file.endsWith(".jpg")){
         let img = document.createElement("img");
-        img.src = file;
-        previewContainer.appendChild(img);
-    } else {
+        img.src = src.file;
+        box.appendChild(img);
+    }else{
         let video = document.createElement("video");
-        video.src = file;
+        video.src = src.file;
         video.autoplay = true;
         video.muted = true;
-        previewContainer.appendChild(video);
+        video.loop = true;
+        box.appendChild(video);
     }
 
-    if(currentPreviewBtn){
-        currentPreviewBtn.classList.remove("previewActive");
-    }
+    let label = document.createElement("span");
+    label.innerText = src.name;
+    box.appendChild(label);
 
-    button.classList.add("previewActive");
-    currentPreviewBtn = button;
+    box.onclick = () => setPreview(index);
+
+    multiview.appendChild(box);
+});
+
+/* SET PREVIEW */
+function setPreview(index){
+
+    document.querySelectorAll(".source").forEach(s=>s.classList.remove("preview"));
+
+    previewIndex = index;
+    document.querySelectorAll(".source")[index].classList.add("preview");
 }
 
-/* =========================
-   FUNÇÃO CUT
-========================= */
-
+/* CUT */
 function cut(){
 
-    if(!previewFile) return;
+    if(previewIndex === null) return;
 
     programContainer.innerHTML = "";
+    let src = sources[previewIndex];
 
-    if(previewFile.endsWith(".png") || previewFile.endsWith(".jpg")){
+    if(src.file.endsWith(".png") || src.file.endsWith(".jpg")){
         let img = document.createElement("img");
-        img.src = previewFile;
+        img.src = src.file;
         programContainer.appendChild(img);
-    } else {
+    }else{
         let video = document.createElement("video");
-        video.src = previewFile;
+        video.src = src.file;
         video.autoplay = true;
+        video.controls = false;
         programContainer.appendChild(video);
     }
 
+    document.querySelectorAll(".source").forEach(s=>s.classList.remove("program"));
+    document.querySelectorAll(".source")[previewIndex].classList.add("program");
+
+    programIndex = previewIndex;
+    previewIndex = null;
+
+    document.querySelectorAll(".source").forEach(s=>s.classList.remove("preview"));
+
     onair.classList.add("on");
-
-    if(currentProgramBtn){
-        currentProgramBtn.classList.remove("programActive");
-    }
-
-    if(currentPreviewBtn){
-        currentPreviewBtn.classList.remove("previewActive");
-        currentPreviewBtn.classList.add("programActive");
-        currentProgramBtn = currentPreviewBtn;
-        currentPreviewBtn = null;
-    }
 }
 
-/* =========================
-   ATALHOS DE TECLADO
-========================= */
-
-const buttons = document.querySelectorAll("button");
-
-const commands = {
-    "c1": () => buttons[0].click(),
-    "c2": () => buttons[1].click(),
-    "v1": () => buttons[2].click(),
-    "v2": () => buttons[3].click(),
-    "v3": () => buttons[4].click(),
-    "s1": () => buttons[5].click(),
-    "ct": () => cut()
-};
-
+/* ATALHOS TECLADO */
 let keyBuffer = "";
 let bufferTimeout;
 
-document.addEventListener("keydown", function(e){
+const commands = {
+    "cam1": () => setPreview(0),
+    "cam2": () => setPreview(1),
+    "vtr1": () => setPreview(2),
+    "vtr2": () => setPreview(3),
+    "vtr3": () => setPreview(4),
+    "slide1": () => setPreview(5),
+    "cut": () => cut()
+};
 
-    if(e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+document.addEventListener("keydown", function(e){
 
     keyBuffer += e.key.toLowerCase();
 
     clearTimeout(bufferTimeout);
-
-    bufferTimeout = setTimeout(() => {
-        keyBuffer = "";
-    }, 2000);
+    bufferTimeout = setTimeout(()=> keyBuffer="",2000);
 
     for(let cmd in commands){
         if(keyBuffer.endsWith(cmd)){
             commands[cmd]();
-            keyBuffer = "";
+            keyBuffer="";
         }
     }
 });
@@ -230,4 +228,3 @@ document.addEventListener("keydown", function(e){
 
 </body>
 </html>
-
