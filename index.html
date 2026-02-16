@@ -195,13 +195,13 @@ function cut(){
 const buttons = document.querySelectorAll("button");
 
 const commands = {
-    "cam1": () => buttons[0].click(),
-    "cam2": () => buttons[1].click(),
-    "vtr1": () => buttons[2].click(),
-    "vtr2": () => buttons[3].click(),
-    "vtr3": () => buttons[4].click(),
-    "slide1": () => buttons[5].click(),
-    "cut": () => cut()
+    "c1": () => buttons[0].click(),
+    "c2": () => buttons[1].click(),
+    "v1": () => buttons[2].click(),
+    "v2": () => buttons[3].click(),
+    "v3": () => buttons[4].click(),
+    "s1": () => buttons[5].click(),
+    "ct": () => cut()
 };
 
 let keyBuffer = "";
@@ -230,3 +230,4 @@ document.addEventListener("keydown", function(e){
 
 </body>
 </html>
+
